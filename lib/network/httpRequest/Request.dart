@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:connectivity/connectivity.dart';
+import 'package:dio/adapter.dart';
 import 'package:dio/dio.dart';
 import 'package:playground/network/httpRequest/NetCode.dart';
 import 'package:playground/network/httpRequest/NetResult.dart';
@@ -55,9 +56,7 @@ class Request {
 
     Dio dio = Request.instance.dio;
     Options options = Options(
-        method: method,
-        contentType: contentTypeXForm ? ContentType.parse("application/x-www-form-urlencoded") : null,
-        headers: headerMap);
+        method: method, contentType: contentTypeXForm ? "application/x-www-form-urlencoded" : null, headers: headerMap);
 
 //    if (data is FileFormData) {
 //      data = (data as FileFormData).formData;

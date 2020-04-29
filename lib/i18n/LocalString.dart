@@ -41,4 +41,12 @@ abstract class LocalString {
   String international_Japanese;
 
   String international_English;
+
+  String theme_cannot_changed_now_promet;
+
+  ///------------ main page ------------------
+  //page names
+  String home_page_name;
+
+  String user_page_name;
 }

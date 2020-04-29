@@ -63,4 +63,13 @@ class LocalStringJP implements LocalString {
 
   @override
   String international_traditional_Chinese = '繁体字中国語';
+
+  @override
+  String home_page_name = 'ホームページ';
+
+  @override
+  String user_page_name = 'ユーザー';
+
+  @override
+  String theme_cannot_changed_now_promet = 'ダークモードではテーマの色を編集できません.';
 }

@@ -63,4 +63,13 @@ class LocalStringZH implements LocalString {
 
   @override
   String international_traditional_Chinese = '繁体中文';
+
+  @override
+  String home_page_name = '主页';
+
+  @override
+  String user_page_name = '我的';
+
+  @override
+  String theme_cannot_changed_now_promet = '深色模式下无法编辑主题颜色';
 }

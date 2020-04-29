@@ -1,7 +1,5 @@
 import 'dart:convert';
 
-import 'package:playground/network/httpRequest/NetCode.dart';
-
 class NetResult {
   var result;
 
@@ -39,25 +37,13 @@ class NetResult {
     int statusCode,
   }) {
     this.statusCode = statusCode;
+    this.error = statusCode != 200;
     var receiveData;
     if (data != null && data != '') {
       if (data is String) {
         receiveData = json.decode(data);
       } else {
         receiveData = data;
-      }
-    }
-    this.error = error;
-    if (!error && receiveData is Map) {
-      total = receiveData['total'];
-      statusCode = receiveData['idStatus'];
-      errorMessage = receiveData['statusContent'];
-    }
-    if (error) {
-      if (receiveData is Map) {
-        errorMessage = receiveData[resultErrorKey];
-      } else {
-        statusCode = NetCode.NETWORK_UNKNOWN;
       }
     }
     result = receiveData;

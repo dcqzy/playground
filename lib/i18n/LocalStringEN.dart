@@ -63,4 +63,13 @@ class LocalStringUS implements LocalString {
 
   @override
   String international_traditional_Chinese = 'Traditional Chinese';
+
+  @override
+  String home_page_name = 'Home';
+
+  @override
+  String user_page_name = 'Me';
+
+  @override
+  String theme_cannot_changed_now_promet = 'Theme color can not be edited in dark mode.';
 }

@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:playground/common/CustomImages.dart';
 import 'package:playground/i18n/CustomLocalzation.dart';
 import 'package:playground/model/RowItem.dart';
+import 'package:playground/pages/main/HomePage.dart';
 import 'package:playground/pages/main/SettingVIew.dart';
+import 'package:playground/pages/main/UserPage.dart';
 
 class MainPage extends StatefulWidget {
   static final String pageName = 'main_page';
@@ -12,8 +14,23 @@ class MainPage extends StatefulWidget {
   _MainPageState createState() => _MainPageState();
 }
 
-class _MainPageState extends State<MainPage> {
+class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin {
   List<RowItem> settings = [];
+
+  final GlobalKey<ScaffoldState> key = GlobalKey<ScaffoldState>();
+
+  TabController controller;
+
+  List<RowItem> pages = [
+    RowItem(identify: 'home', data: HomePage()),
+    RowItem(identify: 'user', data: UserPage()),
+  ];
+
+  @override
+  void initState() {
+    controller = TabController(vsync: this, length: pages.length);
+    super.initState();
+  }
 
   @override
   void didChangeDependencies() {
@@ -23,25 +40,75 @@ class _MainPageState extends State<MainPage> {
     super.didChangeDependencies();
   }
 
+  String getPageName(String identify) {
+    switch (identify) {
+      case 'user':
+        return LocalizedString(context).user_page_name;
+      case 'home':
+        return LocalizedString(context).home_page_name;
+      default:
+        return '';
+    }
+  }
+
+  Icon getIcon(String identify) {
+    switch (identify) {
+      case 'home':
+        return Icon(Icons.home);
+      case 'user':
+        return Icon(Icons.person);
+      default:
+        return Icon(Icons.data_usage);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
-      drawer: Drawer(
-        child: DrawView(settings),
+      key: key,
+      drawer: DrawView(),
+      bottomNavigationBar: Container(
+        child: TabBar(
+          controller: controller,
+          tabs: pages
+              .map((item) => Tab(
+                    text: getPageName(item.identify),
+                    icon: getIcon(item.identify),
+                  ))
+              .toList(),
+        ),
+        color: Theme.of(context).primaryColor,
       ),
-      body: Container(
-        alignment: Alignment.center,
-        child: Text(LocalizedString(context).hello_world),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          key.currentState.openDrawer();
+        },
+        child: Icon(Icons.settings),
+        splashColor: Theme.of(context).primaryColor,
+      ),
+      body: SafeArea(
+        child: Column(
+          children: <Widget>[
+            Expanded(
+              child: TabBarView(
+                physics: BouncingScrollPhysics(),
+                children: pages.map((item) => item.data as Widget).toList(),
+                controller: controller,
+              ),
+            ),
+          ],
+        ),
       ),
     );
+//    return GamePage();
   }
 }
 
+/// the overlay [Draw] of the Scaffold on the leading side
 class DrawView extends StatelessWidget {
-  final List<RowItem> settings;
+  final List<RowItem> settings = [RowItem(identify: 'setting')];
 
-  DrawView(this.settings);
+//  DrawView(this.settings);
 
   Icon getIcons(String identify) {
     switch (identify) {
@@ -61,6 +128,15 @@ class DrawView extends StatelessWidget {
     }
   }
 
+  String getItemName(BuildContext context, String identify) {
+    switch (identify) {
+      case 'setting':
+        return LocalizedString(context).settings;
+      default:
+        return '';
+    }
+  }
+
   Widget buildSections(BuildContext context, RowItem item) {
     return GestureDetector(
       onTap: () {
@@ -72,7 +148,7 @@ class DrawView extends StatelessWidget {
         child: Row(
           children: <Widget>[
             getIcons(item.identify),
-            Text(item.title),
+            Text(getItemName(context, item.identify)),
             Icon(Icons.chevron_right),
           ],
         ),
@@ -82,8 +158,8 @@ class DrawView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        body: SafeArea(
+    return Drawer(
+        child: SafeArea(
       child: Column(
         children: <Widget>[
           Container(

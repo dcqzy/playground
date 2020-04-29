@@ -1,5 +1,6 @@
 import 'package:playground/bloc/bloc_provider.dart';
 import 'package:playground/model/BannerModel.dart';
+import 'package:playground/network/dao(repo)/HomeDao.dart';
 import 'package:rxdart/rxdart.dart';
 
 class MainBloc implements BlocBase {
@@ -8,6 +9,12 @@ class MainBloc implements BlocBase {
   Sink<List<BannerModel>> get _bannerSink => _banner.sink;
 
   Stream<List<BannerModel>> get bannerStream => _banner.stream;
+
+  Future getBanner() {
+    return HomeDao.getHomeBanner().then((value) {
+      _bannerSink.add(value);
+    });
+  }
 
   @override
   void dispose() {

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flustars/flustars.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart' as LocaleUtils;
 import 'package:playground/bloc/application_bloc.dart';
 import 'package:playground/bloc/bloc_provider.dart';
@@ -34,18 +35,41 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   Locale _locale;
 
   Color _themeColor = Color(0xFF666666);
 
+  ThemeData themeData;
+
   @override
   void initState() {
     initAll();
+    WidgetsBinding.instance.addObserver(this);
     super.initState();
   }
 
+  @override
+  void didChangePlatformBrightness() {
+    final Brightness brightness = WidgetsBinding.instance.window.platformBrightness;
+    print("present brightness is ${brightness == Brightness.dark ? 'dark' : 'light'}");
+    SpUtil.putBool(Config.themeIsDarkMode, brightness == Brightness.dark ? true : false);
+    this.setState(() {
+      _initTheme();
+    });
+    super.didChangePlatformBrightness();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
   void initAll() {
+    /// 目前的想法是
+    /// dark mode 优先级最高 不允许用户更改主题颜色
+    /// light mode 模式下允许用户更改主题颜色
     _initTheme();
     _initLocale();
     _initListener();
@@ -77,8 +101,21 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _initTheme() {
-    String temp = SpUtil.getString(Config.themeSettingKey);
-    _themeColor = defaultThemeList[temp];
+    if (SpUtil.getBool(Config.themeIsDarkMode)) {
+      themeData = ThemeData.dark().copyWith(
+        primaryColor: Colors.black,
+        accentColor: Colors.grey,
+      );
+      SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
+    } else {
+      String temp = SpUtil.getString(Config.themeSettingKey);
+      _themeColor = defaultThemeList[temp];
+      themeData = ThemeData.light().copyWith(
+        primaryColor: _themeColor,
+        accentColor: _themeColor,
+      );
+      SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
+    }
   }
 
   void refreshApplicationGlobalSettings() {
@@ -90,24 +127,28 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+//    final ApplicationBloc applicationBloc = BlocProvider.of<ApplicationBloc>(context);
+//    return StreamBuilder(
+//      stream: applicationBloc.systemIsInDarkModeStream,
+//      builder: (BuildContext context,AsyncSnapshot<bool> snapshot){
     return MaterialApp(
-        routes: {
-          MainPage.pageName: (ctx) => MainPage(),
-        },
-        home: WelcomePage(),
-        locale: _locale,
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData.light().copyWith(
-          primaryColor: _themeColor,
-          accentColor: _themeColor,
-        ),
-        localizationsDelegates: [
-          LocaleUtils.GlobalMaterialLocalizations.delegate,
-          LocaleUtils.GlobalWidgetsLocalizations.delegate,
-          DefaultCupertinoLocalizations.delegate,
-          locale.CustomLocalizationsDelegate.delegate,
-        ],
-        supportedLocales: locale.CustomLocalizations.supportedLocals);
+      routes: {
+        MainPage.pageName: (ctx) => MainPage(),
+      },
+      home: WelcomePage(),
+      locale: _locale,
+      debugShowCheckedModeBanner: false,
+      theme: themeData,
+      localizationsDelegates: [
+        LocaleUtils.GlobalMaterialLocalizations.delegate,
+        LocaleUtils.GlobalWidgetsLocalizations.delegate,
+        DefaultCupertinoLocalizations.delegate,
+        locale.CustomLocalizationsDelegate.delegate,
+      ],
+      supportedLocales: locale.CustomLocalizations.supportedLocals,
+    );
+//      },
+//    );
   }
 }
 

@@ -12,10 +12,12 @@ class SettingView extends StatefulWidget {
   _SettingViewState createState() => _SettingViewState();
 }
 
-class _SettingViewState extends State<SettingView> {
+class _SettingViewState extends State<SettingView> with WidgetsBindingObserver {
   String userSelectedColor;
 
   List<RowItem> locales;
+
+  bool isDarkMode;
 
   @override
   void initState() {
@@ -24,9 +26,17 @@ class _SettingViewState extends State<SettingView> {
 
   @override
   void didChangeDependencies() {
+    isDarkMode = SpUtil.getBool(Config.themeIsDarkMode);
     userSelectedColor = SpUtil.getString(Config.themeSettingKey);
     updateLocaleSettings(isInit: true);
     super.didChangeDependencies();
+  }
+
+  @override
+  void didChangePlatformBrightness() {
+    isDarkMode = SpUtil.getBool(Config.themeIsDarkMode);
+    this.setState(() {});
+    super.didChangePlatformBrightness();
   }
 
   void updateLocaleSettings({bool isInit = false}) {
@@ -40,6 +50,86 @@ class _SettingViewState extends State<SettingView> {
     if (!isInit) this.setState(() {});
   }
 
+  Widget buildThemeSelectPanel(ApplicationBloc applicationBloc, bool enable) {
+    List<Widget> children = [
+      ExpansionTile(
+        title: Text(LocalizedString(context).theme),
+        children: <Widget>[
+          Wrap(
+            children: List.generate(defaultThemeList.length + 1, (index) {
+              if (index == 0) {
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    Container(
+                      margin: EdgeInsets.all(7.5),
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(color: Theme.of(context).primaryColor),
+                    ),
+                    Container(
+                      width: 2,
+                      height: 30,
+                      color: Colors.grey,
+                    )
+                  ],
+                );
+              }
+              String colorStringKey = defaultThemeList.keys.toList()[--index];
+              Color color = defaultThemeList[colorStringKey];
+              return GestureDetector(
+                onTap: () {
+                  SpUtil.putString(Config.themeSettingKey, colorStringKey);
+                  applicationBloc.sendAppEvent(1);
+                },
+                child: Container(
+                  margin: EdgeInsets.all(7.5),
+                  child: Container(
+                    decoration: BoxDecoration(color: color),
+                    width: 30,
+                    height: 30,
+                  ),
+                ),
+              );
+            }),
+          ),
+        ],
+      ),
+    ];
+    if (!enable) {
+      children.addAll(<Widget>[
+        Positioned(
+            top: 0,
+            right: 0,
+            left: 0,
+            bottom: 0,
+            child: Opacity(
+              opacity: 0.5,
+              child: Container(
+                color: Theme.of(context).primaryColor,
+              ),
+            )),
+        Positioned(
+          top: 0,
+          right: 0,
+          left: 0,
+          bottom: 0,
+          child: Container(
+            alignment: Alignment.center,
+            child: Text(
+              LocalizedString(context).theme_cannot_changed_now_promet,
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ),
+      ]);
+    }
+    return Stack(
+      children: children,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final ApplicationBloc applicationBloc = BlocProvider.of<ApplicationBloc>(context);
@@ -49,50 +139,7 @@ class _SettingViewState extends State<SettingView> {
       ),
       body: Column(
         children: <Widget>[
-          ExpansionTile(
-            title: Text(LocalizedString(context).theme),
-            children: <Widget>[
-              Wrap(
-                children: List.generate(defaultThemeList.length + 1, (index) {
-                  if (index == 0) {
-                    return Row(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        Container(
-                          margin: EdgeInsets.all(7.5),
-                          width: 30,
-                          height: 30,
-                          decoration: BoxDecoration(color: Theme.of(context).primaryColor),
-                        ),
-                        Container(
-                          width: 2,
-                          height: 30,
-                          color: Colors.grey,
-                        )
-                      ],
-                    );
-                  }
-                  String colorStringKey = defaultThemeList.keys.toList()[--index];
-                  Color color = defaultThemeList[colorStringKey];
-                  return GestureDetector(
-                    onTap: () {
-                      SpUtil.putString(Config.themeSettingKey, colorStringKey);
-                      applicationBloc.sendAppEvent(1);
-                    },
-                    child: Container(
-                      margin: EdgeInsets.all(7.5),
-                      child: Container(
-                        decoration: BoxDecoration(color: color),
-                        width: 30,
-                        height: 30,
-                      ),
-                    ),
-                  );
-                }),
-              ),
-            ],
-          ),
+          buildThemeSelectPanel(applicationBloc, !isDarkMode),
           ExpansionTile(
             title: Text(LocalizedString(context).international),
             children: locales

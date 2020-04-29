@@ -1,4 +1,3 @@
-import 'package:flukit/flukit.dart';
 import 'package:flustars/flustars.dart';
 import 'package:flutter/material.dart';
 import 'package:playground/common/Config.dart';
@@ -11,13 +10,6 @@ class WelcomePage extends StatefulWidget {
 }
 
 class _WelcomePageState extends State<WelcomePage> {
-  final List<String> firstLoginImages = [
-    CustomImages.guide1,
-    CustomImages.guide2,
-    CustomImages.guide3,
-    CustomImages.guide4,
-  ];
-
   bool showAd = false;
 
   int secondRemain = 0;
@@ -83,21 +75,9 @@ class _WelcomePageState extends State<WelcomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: showAd
-          ? SafeArea(
-              child: Center(
-              child: buildAd(),
-            ))
-          : Swiper(
-              autoStart: false,
-              circular: false,
-              children: firstLoginImages.map((item) => assetImage(item)).toList(),
-              indicator: CircleSwiperIndicator(
-                radius: 4.0,
-                padding: EdgeInsets.only(bottom: 30),
-                itemColor: Colors.black26,
-              ),
-            ),
-    );
+        body: SafeArea(
+            child: Center(
+      child: buildAd(),
+    )));
   }
 }
